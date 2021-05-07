@@ -42,4 +42,3 @@ func TestSign(t *testing.T) {
 	signB = a.Sign(Post)
 	ast.EqualValues(signB, signB)
 }
-

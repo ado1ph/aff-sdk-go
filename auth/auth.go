@@ -88,25 +88,17 @@ func (a *Auth) buildAuthStringPrefix() string {
 func (a *Auth) buildCanonicalRequest(canonicalHeader string, method httpMethod) string {
 	// HTTP Method + "\n" + CanonicalURI + "\n" + CanonicalQueryString + "\n" + CanonicalHeaders
 	newMethod := strings.ToTitle(method.String())
-	return newMethod + "\n" + a.uriEncode(a.Path) + "\n" + a.getCanonicalQueryString(a.QueryParam) + "\n" + canonicalHeader
+	return newMethod + JoinSigncanonicalHeaders + uriEncode(a.Path) + JoinSigncanonicalHeaders + a.getCanonicalQueryString(a.QueryParam) + JoinSigncanonicalHeaders + canonicalHeader
 }
 
 // buildSigningKey sign step 3
 func (a *Auth) buildSigningKey(authStringPrefix string) string {
-	return a.hmacSha256(authStringPrefix, a.SK)
+	return hmacSha256(authStringPrefix, a.SK)
 }
 
 // buildSignature sign step 4
 func (a *Auth) buildSignature(canonicalRequest string, secret string) string {
-	fmt.Println("canonicalRequest11", canonicalRequest)
-	fmt.Println("secret",a.hmacSha256(canonicalRequest, secret))
-	return a.hmacSha256(canonicalRequest, secret)
-}
-
-func (a *Auth) hmacSha256(data string, secret string) string {
-	p := hmac.New(sha256.New, []byte(secret))
-	p.Write([]byte(data))
-	return hex.EncodeToString(p.Sum(nil))
+	return hmacSha256(canonicalRequest, secret)
 }
 
 func (a *Auth) getCanonicalQueryString(params map[string]string) string {
@@ -122,9 +114,9 @@ func (a *Auth) getCanonicalQueryString(params map[string]string) string {
 
 		item := ""
 		if len(v) == 0 {
-			item = fmt.Sprintf("%s=", a.uriEncode(k))
+			item = fmt.Sprintf("%s=", uriEncode(k))
 		} else {
-			item = fmt.Sprintf("%s=%s", a.uriEncode(k), a.uriEncode(v))
+			item = fmt.Sprintf("%s=%s", uriEncode(k), uriEncode(v))
 		}
 		result = append(result, item)
 	}
@@ -142,17 +134,22 @@ func (a *Auth) getCanonicalHeaders() (string, string) {
 		headKey := strings.ToLower(k)
 
 		headVal := strings.TrimSpace(v)
-		encoded := a.uriEncode(headKey) + ":" + a.uriEncode(headVal)
+		encoded := uriEncode(headKey) + ":" + uriEncode(headVal)
 		canonicalHeaders = append(canonicalHeaders, encoded)
 		signHeaders = append(signHeaders, headKey)
 	}
 
 	sort.Strings(canonicalHeaders)
 	sort.Strings(signHeaders)
-	return strings.Join(canonicalHeaders, "\n"), strings.Join(signHeaders, ";")
+	return strings.Join(canonicalHeaders, JoinSigncanonicalHeaders), strings.Join(signHeaders, JoinSignHeaders)
 }
 
-func (a *Auth) uriEncode(str string) string {
+func uriEncode(str string) string {
 	return strings.Replace(str, "%2F", "/", -1)
 }
 
+func hmacSha256(data string, secret string) string {
+	p := hmac.New(sha256.New, []byte(secret))
+	p.Write([]byte(data))
+	return hex.EncodeToString(p.Sum(nil))
+}
