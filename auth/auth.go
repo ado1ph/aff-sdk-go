@@ -43,7 +43,7 @@ type (
 		Path       string
 		Param      interface{}
 		QueryParam map[string]string
-		customTS   string
+		CustomTS   string
 	}
 
 	HttpMethod string
@@ -75,10 +75,10 @@ func (a *Auth) Sign(method HttpMethod) string {
 func (a *Auth) buildAuthStringPrefix() string {
 	// "bce-auth-v1/{accessKeyId}/{timestamp}/{expirationPeriodInSeconds}"
 	var utc string
-	if len(a.customTS) == 0 {
+	if len(a.CustomTS) == 0 {
 		utc = time.Now().UTC().Format("2006-01-02T15:04:05Z")
 	} else {
-		utc = a.customTS
+		utc = a.CustomTS
 	}
 	return fmt.Sprintf("bce-auth-v1/%s/%s/%d", a.AK, utc, a.Expire)
 }

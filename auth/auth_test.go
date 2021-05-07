@@ -15,7 +15,7 @@ func TestSign(t *testing.T) {
 		"Host": "api-aifanfan.baidu.com",
 	}
 	a.Path = "/common/v1/acct/init"
-	a.customTS = "2006-01-02T15:04:05Z"
+	a.CustomTS = "2006-01-02T15:04:05Z"
 	signA := "bce-auth-v1/84d0b59b18b947f6bb0b1bcea00969e3/2006-01-02T15:04:05Z/1000000/host/8248bac9fc0bdcc4a009de272c0a00cdd8a96a2e6b0ddef60c52eab79f47f3b1"
 	signB := a.Sign(Post)
 	ast.EqualValues(signA, signB)
@@ -38,7 +38,7 @@ func TestSign(t *testing.T) {
 		"authorization": "123",
 	}
 	a.Header = map[string]string{}
-	a.customTS = ""
+	a.CustomTS = ""
 	signB = a.Sign(Post)
 	ast.EqualValues(signB, signB)
 }
