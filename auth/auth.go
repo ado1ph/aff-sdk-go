@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
@@ -17,21 +18,19 @@ const (
 	AuthVersion = "bce-auth-v1"
 	// JoinSigncanonicalHeaders sign关联符号
 	JoinSigncanonicalHeaders = "\n"
+	// JoinSign sign关联符号
+	JoinSign = "/"
 	// JoinSignHeaders 分隔符
 	JoinSignHeaders = ";"
 	// DefaultExpireSeconds 默认过期时间
 	DefaultExpireSeconds = 1800
 
 	// Get Get
-	Get HttpMethod = "GET"
+	Get HttpMethod = http.MethodGet
 	// Put Put
-	Put HttpMethod = "PUT"
+	Put HttpMethod = http.MethodPut
 	// Post Post
-	Post HttpMethod = "POST"
-	// Delete Delete
-	Delete HttpMethod = "DELETE"
-	// Head Head
-	Head HttpMethod = "HEAD"
+	Post HttpMethod = http.MethodPost
 )
 
 type (
@@ -44,7 +43,7 @@ type (
 		Path       string
 		Param      interface{}
 		QueryParam map[string]string
-		Time       string
+		customTS   string
 	}
 
 	HttpMethod string
@@ -57,29 +56,29 @@ func (h HttpMethod) String() string {
 
 // NewAuth set ak,sk
 func NewAuth(ak, sk string) *Auth {
-	a := new(Auth)
-	a.AK = ak
-	a.SK = sk
-	a.Expire = DefaultExpireSeconds
-	return a
+	return &Auth{
+		AK:         ak,
+		SK:         sk,
+		Expire:     DefaultExpireSeconds,
+	}
 }
 
 // Sign generate the authorization string
 func (a *Auth) Sign(method HttpMethod) string {
 	canonicalHeader, signHeader := a.getCanonicalHeaders()
 	// bce-auth-v1/{accessKeyId}/{timestamp}/{expirationPeriodInSeconds }/{signedHeaders}/{signature}
-	return a.buildAuthStringPrefix() + "/" + signHeader + "/" +
-		a.buildSignature(a.buildCanonicalRequest(canonicalHeader, method), a.buildSigningKey(a.buildAuthStringPrefix()))
+	signSlice := []string{a.buildAuthStringPrefix(), signHeader, a.buildSignature(a.buildCanonicalRequest(canonicalHeader, method), a.buildSigningKey(a.buildAuthStringPrefix()))}
+	return strings.Join(signSlice, JoinSign)
 }
 
 // buildAuthStringPrefix sign step 1
 func (a *Auth) buildAuthStringPrefix() string {
 	// "bce-auth-v1/{accessKeyId}/{timestamp}/{expirationPeriodInSeconds}"
 	var utc string
-	if len(a.Time) == 0 {
+	if len(a.customTS) == 0 {
 		utc = time.Now().UTC().Format("2006-01-02T15:04:05Z")
 	} else {
-		utc = a.Time
+		utc = a.customTS
 	}
 	return fmt.Sprintf("bce-auth-v1/%s/%s/%d", a.AK, utc, a.Expire)
 }
@@ -88,7 +87,8 @@ func (a *Auth) buildAuthStringPrefix() string {
 func (a *Auth) buildCanonicalRequest(canonicalHeader string, method HttpMethod) string {
 	// HTTP Method + "\n" + CanonicalURI + "\n" + CanonicalQueryString + "\n" + CanonicalHeaders
 	newMethod := strings.ToTitle(method.String())
-	return newMethod + JoinSigncanonicalHeaders + uriEncode(a.Path) + JoinSigncanonicalHeaders + a.getCanonicalQueryString(a.QueryParam) + JoinSigncanonicalHeaders + canonicalHeader
+	canonicalRequestSlice := []string{newMethod, uriEncode(a.Path), a.getCanonicalQueryString(a.QueryParam), canonicalHeader}
+	return strings.Join(canonicalRequestSlice, JoinSigncanonicalHeaders)
 }
 
 // buildSigningKey sign step 3
