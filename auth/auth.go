@@ -23,15 +23,15 @@ const (
 	DefaultExpireSeconds = 1800
 
 	// Get Get
-	Get httpMethod = "GET"
+	Get HttpMethod = "GET"
 	// Put Put
-	Put httpMethod = "PUT"
+	Put HttpMethod = "PUT"
 	// Post Post
-	Post httpMethod = "POST"
+	Post HttpMethod = "POST"
 	// Delete Delete
-	Delete httpMethod = "DELETE"
+	Delete HttpMethod = "DELETE"
 	// Head Head
-	Head httpMethod = "HEAD"
+	Head HttpMethod = "HEAD"
 )
 
 type (
@@ -47,11 +47,11 @@ type (
 		Time       string
 	}
 
-	httpMethod string
+	HttpMethod string
 )
 
 // String 2String
-func (h httpMethod) String() string {
+func (h HttpMethod) String() string {
 	return string(h)
 }
 
@@ -65,7 +65,7 @@ func NewAuth(ak, sk string) *Auth {
 }
 
 // Sign generate the authorization string
-func (a *Auth) Sign(method httpMethod) string {
+func (a *Auth) Sign(method HttpMethod) string {
 	canonicalHeader, signHeader := a.getCanonicalHeaders()
 	// bce-auth-v1/{accessKeyId}/{timestamp}/{expirationPeriodInSeconds }/{signedHeaders}/{signature}
 	return a.buildAuthStringPrefix() + "/" + signHeader + "/" +
@@ -85,7 +85,7 @@ func (a *Auth) buildAuthStringPrefix() string {
 }
 
 // buildCanonicalRequest sign step 2
-func (a *Auth) buildCanonicalRequest(canonicalHeader string, method httpMethod) string {
+func (a *Auth) buildCanonicalRequest(canonicalHeader string, method HttpMethod) string {
 	// HTTP Method + "\n" + CanonicalURI + "\n" + CanonicalQueryString + "\n" + CanonicalHeaders
 	newMethod := strings.ToTitle(method.String())
 	return newMethod + JoinSigncanonicalHeaders + uriEncode(a.Path) + JoinSigncanonicalHeaders + a.getCanonicalQueryString(a.QueryParam) + JoinSigncanonicalHeaders + canonicalHeader
