@@ -25,12 +25,15 @@ const (
 	// DefaultExpireSeconds 默认过期时间
 	DefaultExpireSeconds = 1800
 
-	// Get Get
-	Get HttpMethod = http.MethodGet
-	// Put Put
-	Put HttpMethod = http.MethodPut
-	// Post Post
-	Post HttpMethod = http.MethodPost
+	Get     HttpMethod = http.MethodGet
+	Head    HttpMethod = http.MethodHead
+	Post    HttpMethod = http.MethodPost
+	Put     HttpMethod = http.MethodPut
+	Patch   HttpMethod = http.MethodPatch
+	Delete  HttpMethod = http.MethodDelete
+	Connect HttpMethod = http.MethodConnect
+	Options HttpMethod = http.MethodOptions
+	Trace   HttpMethod = http.MethodTrace
 )
 
 type (
@@ -57,9 +60,9 @@ func (h HttpMethod) String() string {
 // NewAuth set ak,sk
 func NewAuth(ak, sk string) *Auth {
 	return &Auth{
-		AK:         ak,
-		SK:         sk,
-		Expire:     DefaultExpireSeconds,
+		AK:     ak,
+		SK:     sk,
+		Expire: DefaultExpireSeconds,
 	}
 }
 
