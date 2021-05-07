@@ -17,7 +17,7 @@ func main() {
 		"Host": "api-aifanfan.baidu.com",
 	}
 	a.Path = "/common/v1/acct/init"
-	a.Time = "2006-01-02T15:04:05Z"
+	a.CustomTS = "2006-01-02T15:04:05Z"
 
 	sign := a.Sign(auth.Post)
 	fmt.Print("the sign is %s", sign)
