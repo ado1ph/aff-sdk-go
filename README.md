@@ -1,7 +1,9 @@
 # aff-sdk-go
 用户可基于该SDK使用Go语言接入爱番番的产品
 
-# Example
+## auth
+获取授权签名
+### Example
 ```go
 package main
 
